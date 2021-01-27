@@ -1,15 +1,26 @@
 function getEle(id) {
     return document.getElementById(id);
 }
-
+var isLoading = false;
 var taskService = new taskService();
 var validation = new validation();
 
+//check Loading Function
+function checkLoading(isLoading) {
+    if (isLoading) {
+        getEle('loader').style.display = "block";
+    } else {
+        getEle('loader').style.display = "none";
+    }
+}
+
 // Lấy danh sách Task từ server // Đây là hàm bất đồng bộ, vì trả về kết quả là mảng danh sách chậm vài giấy. 
 function getTaskListFromServer(callback) {
+    checkLoading(true);
     taskService.getTaskList()
         .then(function (result) {
             renderList(result.data);
+            checkLoading(false);
             callback(result.data);
         })
         .catch(function (err) {
@@ -34,9 +45,11 @@ function addTasktoServer(arrayServer) {
     isValid &= validation.checkEmpty(newTask.taskName, "notiInput", 0) && validation.checkTaskExisted(newTask.taskName, "notiInput", 0, arrayServer);
 
     if (isValid) {
+        checkLoading(true);
         taskService.addTasktoServer(newTask)
             .then(function (result) {
                 console.log(result.data);
+                checkLoading(false);
                 alert("Task is added successully");
                 getTaskListFromServer();
             })
@@ -79,9 +92,11 @@ function renderList(arr) {
 
 // Delete Task 
 function deleteToDo(id) {
+    checkLoading(true);
     taskService.deleteTaskFromServer(id)
         .then(function (result) {
             renderList(result.data);
+            checkLoading(false);
             getTaskListFromServer();
         })
         .catch(function (err) {
@@ -108,6 +123,7 @@ function changeStatus(id) {
 }
 //Update Task to Server
 function updateTask(id, task) {
+    checkLoading(true);
     taskService.updateTask(id, task)
         .then(function (result) {
             // console.log(result);
